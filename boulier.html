@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+
+    <style>
+      body {
+        background: url("./LOTO-node-2022.jpg");
+        background-size: 100%;
+        background-repeat: no-repeat;
+      }
+      #history > li {
+        font-size: 50px;
+        width: 90px;
+      }
+      #number-result {
+        font-size: 300px;
+      }
+    </style>
+
+    <title>Loto Aquinum</title>
+  </head>
+
+  <body>
+    <canvas class="confetti" id="canvas" style="position: absolute; z-index: -1;"></canvas>
+    <div id="gif" style="background-color: rgba(0, 0, 0, 0.6);width:100vw; height: 100vh; position: absolute; display: none; align-items: center; justify-content: center; z-index:1"><img src=""  style="width:800px;transform: rotate(23deg)"/></div>
+    <div style="position: fixed; top: 780px; left: 500px; width:1180px;">
+      <ul id="history" class="list-inline"></ul>
+    </div>
+    <a href="#null" id="calling-button" onclick="getaNumber()" style="position: fixed;left:1080px;top: 80px;">
+      <img src="./BOUTON.png" alt="Tirer un numéro" style="width:400px">
+    </a>
+    <div id="number-result" style="text-align:center;font-weight: bold; width:400px;position: fixed; color: black; left: 920px;top: 400px"></div>
+
+    <div style="position:fixed;bottom:0;right:0" class="btn-group" role="group">    
+      <button type="button" class="btn btn-primary" onclick="bingo()">Bingo !</button>
+      <button type="button" class="btn btn-secondary" onclick="reset()">RaZ</button>
+    </div>
+
+    <script src="confetti.js"></script>
+    <script>
+      const min = 1;
+      const max = 90;
+      const gifMax = 13;
+      window.numbers = [];
+      disabled = false;
+
+      window.onload = function() {
+        const cookieNumbers = getCookie("numbers");
+        console.log(cookieNumbers);
+        if (null != cookieNumbers) {
+          window.numbers = JSON.parse(cookieNumbers);
+        }
+        updateHistoryList();
+      };
+
+      function bingo() {
+        initConfetti();
+        render();
+        rendergif();
+      }
+
+      function rendergif() {
+        const randomnumber = randomIntFromInterval(1, gifMax);
+        const gifContainer = document.getElementById('gif');
+        const gif = gifContainer.querySelector('img');
+        gif.src=`./gifs/giphy-${randomnumber}.gif`;
+        gifContainer.style.display = 'flex';
+        setTimeout(hidegif, 10000);
+      }
+
+      function hidegif() {
+        const gifContainer = document.getElementById('gif');
+        gifContainer.style.display = "none";
+      }
+
+      function updateHistoryList() {
+        document.getElementById("history").innerHTML = "";
+        window.numbers.forEach(function(number) {
+          const historyElement = document.createElement("li");
+          historyElement.innerHTML = number;
+          historyElement.className = "list-inline-item";
+          document.getElementById("history").appendChild(historyElement);
+        });
+      }
+      function displayResult(result) {
+        document.getElementById("number-result").innerHTML = result;
+      }
+      function randomIntFromInterval(min, max) {
+        // min and max included
+        return Math.floor(Math.random() * (max - min + 1) + min);
+      }
+      function getaNumber() {
+        disableButton();
+        const number = randomIntFromInterval(min, max);
+        if (window.numbers.indexOf(number) == -1) {
+          window.numbers.push(number);
+          setCookie("numbers", JSON.stringify(window.numbers), 365);
+          displayResult(number);
+          updateHistoryList();
+          return;
+        }
+        getaNumber();
+      }
+      function enableButton() {
+        document.getElementById("calling-button").disabled = false;
+      }
+      function disableButton() {
+        document.getElementById("calling-button").disabled = true;
+        setTimeout(function() {
+          enableButton();
+        }, 2000);
+      }
+      function setCookie(cname, cvalue, exdays) {
+        var d = new Date();
+        d.setTime(d.getTime() + exdays * 24 * 60 * 60 * 1000);
+        var expires = "expires=" + d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+      }
+      function getCookie(cname) {
+        var name = cname + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var ca = decodedCookie.split(";");
+        for (var i = 0; i < ca.length; i++) {
+          var c = ca[i];
+          while (c.charAt(0) == " ") {
+            c = c.substring(1);
+          }
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return null;
+      }
+      function reset() {
+        if (window.confirm("Es-tu sûr de vouloir reset ?")) {
+          window.numbers = [];
+          setCookie("numbers", "", 365);
+          updateHistoryList();
+          displayResult("");
+        }
+      }
+    </script>
+  </body>
+</html>
